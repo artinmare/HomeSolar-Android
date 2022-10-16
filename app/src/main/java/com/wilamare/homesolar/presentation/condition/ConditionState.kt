@@ -1,8 +1,6 @@
 package com.wilamare.homesolar.presentation.condition
 
-import com.wilamare.homesolar.domain.setting.Action
 import com.wilamare.homesolar.domain.setting.Condition
-import com.wilamare.homesolar.domain.setting.Parameter
 
 data class ConditionState(
     val condition: Condition = Condition(),

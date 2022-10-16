@@ -1,7 +1,6 @@
 package com.wilamare.homesolar.presentation.statistic
 
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,8 +11,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.BarChart
-import androidx.compose.material.icons.outlined.ShowChart
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +34,7 @@ import com.wilamare.homesolar.common.formattedString
 import com.wilamare.homesolar.presentation.common.*
 import com.wilamare.homesolar.ui.theme.*
 import kotlinx.coroutines.launch
+import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination
@@ -144,8 +143,6 @@ fun StatisticScreen(
                                             monthPickerDialog = true
                                         Timescale.YEAR ->
                                             yearPickerDialog = true
-                                        else ->
-                                        {}
                                     }
                                 }
                                 catch (e: Exception){
@@ -163,13 +160,12 @@ fun StatisticScreen(
                         Text(text = viewModel.getSelectedTimescale())
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    val icon = when (viewModel.chartState.value.chartType) {
-                        ChartType.LINE ->
-                            if (viewModel.chartState.value.isAggregated) Icons.Filled.StackedLineChart else Icons.Outlined.ShowChart
-                        ChartType.BAR ->
-                            if (viewModel.chartState.value.isAggregated) Icons.Filled.StackedBarChart else Icons.Outlined.BarChart
-                    }
-
+//                    val icon = when (viewModel.chartState.value.chartType) {
+//                        ChartType.LINE ->
+//                            if (viewModel.chartState.value.isAggregated) Icons.Filled.StackedLineChart else Icons.Outlined.ShowChart
+//                        ChartType.BAR ->
+//                            if (viewModel.chartState.value.isAggregated) Icons.Filled.StackedBarChart else Icons.Outlined.BarChart
+//                    }
 //                    IconToggleButton(
 //                        checked = viewModel.chartState.value.isAggregated,
 //                        onCheckedChange = { viewModel.toggleAggregated() }
@@ -261,12 +257,24 @@ fun StatisticScreen(
                         }
                     }
                 }
+                if(viewModel.state.value.timescale != Timescale.DAY){
+                    Row(modifier = Modifier.fillMaxWidth(.75f), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column {
+                            Text(text = "Selected ${viewModel.state.value.timescale}".lowercase()
+                                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }, fontWeight = FontWeight.Light)
+                            Text(text = viewModel.getSelectedBarDate(), fontWeight = FontWeight.Bold)
+                        }
+                        Column {
+                            Text(text = "Selected Value", fontWeight = FontWeight.Light)
+                            Text(text = viewModel.chartState.value.selectedPoint.value.formattedString(suffix = "Wh", useSpacing = true), fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(400.dp)
                 ) {
-
                     if (viewModel.state.value.timescale == Timescale.DAY) {
                         LineChart(
                             data = chartDatasets,
@@ -274,11 +282,11 @@ fun StatisticScreen(
                             drawArea = true
                         )
                     } else {
-                        BarChartCanvas(data = chartDatasets, barSelected = {}, drawValue = false)
+                        BarChartCanvas(data = chartDatasets, barSelected = {viewModel.setSelectedPoint(it)}, drawValue = false,formatter = viewModel.getFormatter())
                     }
                 }
                 if (viewModel.state.value.selectedData == StatisticData.BATTERY && viewModel.state.value.timescale == Timescale.DAY) {
-                    Text(text = "Battery Charge Level")
+                    Text(text = "Battery Charge Level", fontWeight = FontWeight.Light)
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -293,18 +301,6 @@ fun StatisticScreen(
                             minValueDescription = ""
                         )
                     }
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                    ) {
-                        BarChart(
-                            selectedData = StatisticData.BATTERY,
-                            data = viewModel.getChartDatasets()
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "Test")
                 }
             }
             if (viewModel.state.value.timescale != Timescale.DAY) {
@@ -361,16 +357,6 @@ fun StatisticScreen(
                             )
                         }
                     }
-
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                if (viewModel.state.value.selectedData == StatisticData.HOME) {
 
                 }
             }

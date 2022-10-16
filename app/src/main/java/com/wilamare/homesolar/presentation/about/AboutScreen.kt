@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
@@ -18,11 +19,13 @@ import com.wilamare.homesolar.presentation.common.TopBar
 import com.wilamare.homesolar.presentation.destinations.HomeScreenDestination
 import kotlinx.coroutines.launch
 
+private const val projectUri = "https://github.com/artinmare/HomeSolar-Android"
 @Destination
 @Composable
 fun AboutScreen(
     navigator: DestinationsNavigator
 ) {
+    val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -52,7 +55,11 @@ fun AboutScreen(
                 Text(text = "Regards,\nFernando Martin Wila Mare\n1706030056")
             }
             Spacer(modifier = Modifier.height(32.dp))
-            Button(modifier = Modifier.fillMaxWidth(.8f), onClick = { /*TODO*/ }) {
+            Button(modifier = Modifier.fillMaxWidth(.8f), onClick = {
+                scope.launch {
+                    uriHandler.openUri(projectUri)
+                }
+            }) {
                 Text(text = "Open Github")
             }
 

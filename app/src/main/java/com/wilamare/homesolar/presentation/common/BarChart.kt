@@ -1,5 +1,6 @@
 package com.wilamare.homesolar.presentation.common
 
+import android.annotation.SuppressLint
 import android.graphics.Paint
 import android.graphics.Typeface
 import androidx.compose.animation.core.Animatable
@@ -26,8 +27,12 @@ import com.wilamare.homesolar.common.adjustBrightness
 import com.wilamare.homesolar.common.formattedString
 import com.wilamare.homesolar.common.tapOrPress
 import com.wilamare.homesolar.presentation.statistic.StatisticData
+import com.wilamare.homesolar.presentation.statistic.Timescale
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Formatter
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -149,8 +154,9 @@ fun BarChart(
     }
 }
 
+@SuppressLint("SimpleDateFormat")
 @Composable
-fun BarChartCanvas(drawValue:Boolean = false, valueSuffix: String = "W", data: List<ChartDataset>, barSelected: (Int) -> Unit) {
+fun BarChartCanvas(drawValue:Boolean = false, valueSuffix: String = "W", formatter:SimpleDateFormat? = null, data: List<ChartDataset>, barSelected: (ChartData) -> Unit) {
     var offset by remember { mutableStateOf(0f) }
     val dataset = data.first()
     val density = LocalDensity.current
@@ -219,6 +225,12 @@ fun BarChartCanvas(drawValue:Boolean = false, valueSuffix: String = "W", data: L
     val tempAnimatable = remember { Animatable(0f) }
     val maxPoint = dataset.points.maxValue()
     val minPoint = dataset.points.minValue()
+
+    LaunchedEffect(key1 = data){
+        selectedBar?.index?.let { value ->
+            barSelected(dataset.points[value])
+        }
+    }
     Row(modifier = Modifier.fillMaxSize()) {
         Row(
             Modifier
@@ -248,7 +260,7 @@ fun BarChartCanvas(drawValue:Boolean = false, valueSuffix: String = "W", data: L
                                 }
                             }
                         },
-                        onCancel = { position ->
+                        onCancel = {
                             tempPosition = -Int.MAX_VALUE.toFloat()
                             scope.launch {
                                 tempAnimatable.animateTo(0f)
@@ -260,7 +272,7 @@ fun BarChartCanvas(drawValue:Boolean = false, valueSuffix: String = "W", data: L
                                 selectedPosition = it
                                 animatable.snapTo(tempAnimatable.value)
                                 selectedBar?.index?.let { value ->
-                                    barSelected(value)
+                                    barSelected(dataset.points[value])
                                 }
                                 async {
                                     animatable.animateTo(
@@ -312,9 +324,8 @@ fun BarChartCanvas(drawValue:Boolean = false, valueSuffix: String = "W", data: L
                                 pointPaint
                             )
                         }
-
                         canvas.nativeCanvas.drawText(
-                            "$index",
+                            if(formatter!= null) formatter.format(Date(dataset.points[index].timestamp)) else index.toString(),
                             horizontalPadding + distance.times(index),
                             size.height + labelSectionHeight,
                             xAxisPaint

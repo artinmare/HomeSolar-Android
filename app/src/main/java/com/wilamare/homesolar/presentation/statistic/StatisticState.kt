@@ -1,6 +1,7 @@
 package com.wilamare.homesolar.presentation.statistic
 
 import com.wilamare.homesolar.domain.model.Response
+import com.wilamare.homesolar.presentation.common.ChartData
 import java.util.*
 
 data class StatisticState(
@@ -21,7 +22,8 @@ enum class Timescale{
 data class StatisticChartState(
     val isAggregated: Boolean = false,
     val zeroOffset: Float = 0f,
-    val chartType: ChartType = ChartType.LINE
+    val chartType: ChartType = ChartType.LINE,
+    val selectedPoint: ChartData = ChartData(0,0.0)
 )
 
 enum class ChartType {

@@ -108,6 +108,31 @@ class StatisticViewModel @Inject constructor(
         return formatter.format(state.value.selectedDate)
     }
 
+    fun getFormatter():SimpleDateFormat{
+        return when(state.value.timescale){
+            Timescale.MONTH ->
+                SimpleDateFormat("dd")
+            else ->
+                SimpleDateFormat("MMM")
+        }
+    }
+
+    fun getSelectedBarDate():String{
+        return when(state.value.timescale){
+            Timescale.MONTH ->
+                {
+                    SimpleDateFormat("EE, dd MMM yyyy").format(Date(chartState.value.selectedPoint.timestamp))
+                }
+            else ->
+                {
+                    SimpleDateFormat("MMM yyyy").format(Date(chartState.value.selectedPoint.timestamp))
+                }
+        }
+    }
+
+    fun setSelectedPoint(chartData: ChartData){
+        _chartState.value = chartState.value.copy(selectedPoint = chartData)
+    }
     fun toggleAggregated() {
         _chartState.value = chartState.value.copy(isAggregated = !chartState.value.isAggregated)
     }
@@ -137,8 +162,9 @@ class StatisticViewModel @Inject constructor(
                 ChartData(index.toLong(), d)
             }
         }
+        val now = Date().time
         return (0..31).map {
-            ChartData(it.toLong(), (random.nextDouble(50.0)-random.nextDouble(50.0)))
+            ChartData(now + (86400000*it), (random.nextDouble(50.0)-random.nextDouble(50.0)))
         }
     }
 
@@ -149,7 +175,7 @@ class StatisticViewModel @Inject constructor(
     }
 
     fun getBatteryChargeDummy():List<ChartData> {
-        return dummyBatteryCharge().filterIndexed { index, d -> index%20==0 }.mapIndexed { index, d ->
+        return dummyBatteryCharge().filterIndexed { index, _ -> index%20==0 }.mapIndexed { index, d ->
             ChartData(index.toLong(), d)
         }
     }
